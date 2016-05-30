@@ -4,7 +4,7 @@
   "description": "A very simple static site generator",
   "main": "index.js",
   "scripts": {
-    "test": "eslint lib/**/*.js && tape test/*.test.js"
+    "test": "eslint lib/**/*.js test/**/*.js && tape test/*.test.js"
   },
   "repository": {
     "type": "git",
