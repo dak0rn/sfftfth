@@ -171,7 +171,6 @@ test('parse-files; Updates every file record with contents and metadata', t => {
 
     parseFiles(files)
         .then( updated => {
-            console.log(updated);
             updated.forEach( uf => {
                 t.true( names.some( name => name === uf.get('contents') ) );
                 t.true( names.some( name => name === uf.getIn(['meta', 'name'])) );
