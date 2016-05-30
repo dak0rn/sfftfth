@@ -4,6 +4,7 @@
 const test = require('tape');
 const utils = require('./fixture');
 const prunk = require('prunk');
+const path = require('path');
 
 // Setup utility
 const setup = (mock) => {
@@ -16,19 +17,20 @@ const teardown = () => utils.resetTestDoubles('../lib/parse-config');
 
 // A valid configuration
 const validConfig = {
-    contents: '',
-    output: '',
-    theme: ''
+    contents: 'a',
+    output: 'b',
+    theme: 'c'
 };
 
 // Optional keys added if not present
 const optionalKeys = [
-    'baseUrl'
+    'baseUrl',
+    'outputMode'
 ];
 
 /* Tests */
 
-test('Exports a function', t => {
+test('parse-config; Exports a function', t => {
     const parseConfig = setup();
 
     t.plan(1);
@@ -37,13 +39,14 @@ test('Exports a function', t => {
     teardown();
 });
 
-test('Invokes the readFile function with the given path', t => {
+test('parse-config; Invokes the readFile function with the given path', t => {
     const givenPath = '_test_';
     t.plan(1);
 
     const mock = {
-        readFile(path) {
-            t.equal(path, givenPath);
+        readFile(p) {
+            t.equal(p, givenPath);
+            t.end();
 
             return Promise.resolve(validConfig);
         }
@@ -69,12 +72,13 @@ test('Returns a rejected promise if the library does, too', t => {
 
     parseConfig('')
         .then( () => t.fail('fulfilled') )
-        .catch( () => t.pass('rejected') );
+        .catch( () => t.pass('rejected') )
+        .then( () => t.end() );
 
     teardown();
 });
 
-test('Returns a rejected promise if the config is not an valid JSON', t => {
+test('parse-config; Returns a rejected promise if the config is not an valid JSON', t => {
     t.plan(1);
 
     const mock = {
@@ -87,12 +91,13 @@ test('Returns a rejected promise if the config is not an valid JSON', t => {
 
     parseConfig('')
         .then( () => t.fail('fulfilled') )
-        .catch( () => t.pass('rejected') );
+        .catch( () => t.pass('rejected') )
+        .then( () => t.end() );
 
     teardown();
 });
 
-test('Returns a rejected promise if the config does not contain mandatory keys', t => {
+test('parse-config; Returns a rejected promise if the config does not contain mandatory keys', t => {
     // Build a list of configuration objects
     const keys = Object.keys(validConfig);
     const configs = keys.slice(0, keys.length - 1) // Omit one to have only invalid keys
@@ -119,11 +124,12 @@ test('Returns a rejected promise if the config does not contain mandatory keys',
                 .then( () => teardown() );
     })
     // Build Promise chain
-    .reduce( (acc, cur) => acc.then( cur() ), Promise.resolve() );
+    .reduce( (acc, cur) => acc.then( cur ), Promise.resolve() )
+    .then( () => t.end() );
 
 });
 
-test('Merges missing optional keys', t => {
+test('parse-config; Merges missing optional keys', t => {
     t.plan( optionalKeys.length );
 
     const mock = {
@@ -136,14 +142,15 @@ test('Merges missing optional keys', t => {
 
     parseConfig('')
         .then( conf => {
-            optionalKeys.forEach( key => t.true(conf.hasOwnProperty(key), `has optional "${key}"`) );
+            optionalKeys.forEach( key => t.true(conf.has(key), `has optional "${key}"`) );
         })
-        .catch( () => t.fail('rejected') );
+        .catch( () => t.fail('rejected') )
+        .then( () => t.end() );
 
     teardown();
 });
 
-test('Does not overwrite optional keys if present', t => {
+test('parse-config; Does not overwrite optional keys if present', t => {
     t.plan( optionalKeys.length );
     const output = optionalKeys.reduce( (acc, cur) => Object.assign({}, acc, { [cur]: cur }), validConfig);
 
@@ -157,9 +164,33 @@ test('Does not overwrite optional keys if present', t => {
 
     parseConfig('')
         .then( conf => {
-            optionalKeys.forEach( key => t.equal(conf[key], key) );
+            optionalKeys.forEach( key => t.equal(conf.get(key), key) );
         })
-        .catch( () => t.fail('rejected') );
+        .catch( () => t.fail('rejected') )
+        .then( () => t.end() );
+
+    teardown();
+});
+
+test('parse-config; Correctly resolves files', t => {
+    const mock = {
+        readFile() {
+            return Promise.resolve(JSON.stringify(validConfig));
+        }
+    };
+    const parseConfig = setup(mock);
+
+    t.plan( Object.keys(validConfig).length );
+
+    parseConfig('')
+        .then( conf => {
+
+            Object.keys( validConfig )
+                .map( key => ({ key, value: validConfig[key] }))
+                .forEach( def => t.equal(conf.get(def.key), path.resolve('', def.value)));
+        })
+        .catch( e => t.fail('rejected ' + e) )
+        .then( () => t.end() );
 
     teardown();
 });
