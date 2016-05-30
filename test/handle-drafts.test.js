@@ -23,21 +23,23 @@ test('handle-drafts; Removes drafts if renderDrafts=false', t => {
 
     t.plan(3);
 
-    const filtered = handleDrafts(Immutable.Map({ renderDrafts: false }), files);
-
-    t.equal(filtered.count(), 2);
-    filtered.forEach( file => t.false( !! file.getIn(['meta', 'draft']) ) );
-
-    t.end();
+    handleDrafts(Immutable.Map({ renderDrafts: false }), files)
+        .then( filtered => {
+            t.equal(filtered.count(), 2);
+            filtered.forEach( file => t.false( !! file.getIn(['meta', 'draft']) ) );
+        })
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
 });
 
 test('handle-drafts; Keeps drafts if renderDrafts=true', t => {
 
     t.plan(1);
 
-    const filtered = handleDrafts(Immutable.Map({ renderDrafts: true }), files);
-
-    t.equal(filtered.count(), files.count());
-
-    t.end();
+    handleDrafts(Immutable.Map({ renderDrafts: true }), files)
+        .then( filtered => {
+            t.equal(filtered.count(), files.count());
+        })
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
 });
