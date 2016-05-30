@@ -21,6 +21,11 @@ const validConfig = {
     theme: ''
 };
 
+// Optional keys added if not present
+const optionalKeys = [
+    'baseUrl'
+];
+
 /* Tests */
 
 test('Exports a function', t => {
@@ -28,7 +33,6 @@ test('Exports a function', t => {
 
     t.plan(1);
     t.equals(typeof parseConfig, 'function');
-    t.end();
 
     teardown();
 });
@@ -48,6 +52,114 @@ test('Invokes the readFile function with the given path', t => {
     const parseConfig = setup(mock);
 
     parseConfig(givenPath);
+
+    teardown();
+});
+
+test('Returns a rejected promise if the library does, too', t => {
+    t.plan(1);
+
+    const mock = {
+        readFile() {
+            return Promise.reject();
+        }
+    };
+
+    const parseConfig = setup(mock);
+
+    parseConfig('')
+        .then( () => t.fail('fulfilled') )
+        .catch( () => t.pass('rejected') );
+
+    teardown();
+});
+
+test('Returns a rejected promise if the config is not an valid JSON', t => {
+    t.plan(1);
+
+    const mock = {
+        readFile() {
+            return Promise.resolve('$_;"');
+        }
+    };
+
+    const parseConfig = setup(mock);
+
+    parseConfig('')
+        .then( () => t.fail('fulfilled') )
+        .catch( () => t.pass('rejected') );
+
+    teardown();
+});
+
+test('Returns a rejected promise if the config does not contain mandatory keys', t => {
+    // Build a list of configuration objects
+    const keys = Object.keys(validConfig);
+    const configs = keys.slice(0, keys.length - 1) // Omit one to have only invalid keys
+                        .reduce( (acc, cur) => {
+                            const prev = acc[ acc.length - 1];
+                            return acc.concat([ Object.assign({}, prev, { [cur]: true }) ]);
+                        }, [ {} ]);
+
+    t.plan( configs.length );
+
+    // Create handler functions
+    return configs.map( config => () => {
+        const mock = {
+            readFile() {
+                return Promise.resolve(config);
+            }
+        };
+        const confStr = JSON.stringify( config );
+        const parseConfig = setup(mock);
+
+        return parseConfig(config)
+                .then( () => t.fail('Failed ' + confStr) )
+                .catch( () => t.pass('passed ' + confStr) )
+                .then( () => teardown() );
+    })
+    // Build Promise chain
+    .reduce( (acc, cur) => acc.then( cur() ), Promise.resolve() );
+
+});
+
+test('Merges missing optional keys', t => {
+    t.plan( optionalKeys.length );
+
+    const mock = {
+        readFile() {
+            return Promise.resolve(JSON.stringify(validConfig));
+        }
+    };
+
+    const parseConfig = setup(mock);
+
+    parseConfig('')
+        .then( conf => {
+            optionalKeys.forEach( key => t.true(conf.hasOwnProperty(key), `has optional "${key}"`) );
+        })
+        .catch( () => t.fail('rejected') );
+
+    teardown();
+});
+
+test('Does not overwrite optional keys if present', t => {
+    t.plan( optionalKeys.length );
+    const output = optionalKeys.reduce( (acc, cur) => Object.assign({}, acc, { [cur]: cur }), validConfig);
+
+    const mock = {
+        readFile() {
+            return Promise.resolve(JSON.stringify(output));
+        }
+    };
+
+    const parseConfig = setup(mock);
+
+    parseConfig('')
+        .then( conf => {
+            optionalKeys.forEach( key => t.equal(conf[key], key) );
+        })
+        .catch( () => t.fail('rejected') );
 
     teardown();
 });
