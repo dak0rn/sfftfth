@@ -2,7 +2,7 @@
  * Tests for the `handle-drafts` module
  */
 const test = require('tape');
-const handleDrafts = require('../lib/handleDrafts');
+const handleDrafts = require('../lib/handle-drafts');
 const Immutable = require('immutable');
 
 const files = Immutable.fromJS([
