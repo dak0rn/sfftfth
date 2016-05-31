@@ -4,7 +4,7 @@
   "description": "A very simple static site generator",
   "main": "index.js",
   "scripts": {
-    "test": "eslint lib/**/*.js test/**/*.js && tape test/*.test.js"
+    "test": "eslint lib/**/*.js test/**/*.js && nyc tape test/*.test.js"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,9 @@
   "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-preset-es2015": "^6.9.0",
+    "coveralls": "^2.11.9",
     "eslint": "^2.11.0",
+    "nyc": "^6.4.4",
     "prunk": "^1.2.1",
     "tape": "^4.5.1"
   }
