@@ -44,7 +44,9 @@ test('render; invokes theme.index with all files and the config', t => {
         index(list, config) {
             t.equal(list, files);
             t.equal(config, defaultConfiguration);
-        }
+        },
+        post() { return ''; },
+        page() { return ''; }
     };
 
     t.plan(2);
@@ -58,46 +60,56 @@ test('render; invokes theme.index with all files and the config', t => {
 test('render; correctly invokes theme.post', t => {
     const target = files.get(1);
     const theme = {
-        post(post, meta, config, all) {
+        post(post, meta, config, file, all) {
             t.equals(post, target.get('contents'));
             t.equals(meta, target.get('meta'));
             t.equals(config, defaultConfiguration);
             t.equals(all, files);
-        }
+            t.equals(file, target);
+        },
+        index() { return ''; },
+        page() { return ''; }
     };
 
-    t.plan(2);
+    t.plan(5);
     const render = setup(theme);
-    render(defaultConfiguration, files);
+    render(defaultConfiguration, files)
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
 
     teardown();
-    t.end();
 });
 
 test('render; correctly invokes theme.page', t => {
     const target = files.get(0);
     const theme = {
-        page(page, meta, config, all) {
+        page(page, meta, config, file, all) {
             t.equals(page, target.get('contents'));
             t.equals(meta, target.get('meta'));
             t.equals(config, defaultConfiguration);
             t.equals(all, files);
-        }
+            t.equals(file, target);
+        },
+        index() { return ''; },
+        post() { return ''; }
     };
 
-    t.plan(2);
+    t.plan(5);
     const render = setup(theme);
-    render(defaultConfiguration, files);
+    render(defaultConfiguration, files)
+            .catch( e => t.fail(e) )
+            .then( () => t.end() );
 
     teardown();
-    t.end();
 });
 
 test('render; adds the index file to the list', t => {
     const theme = {
         index() {
             return '42';
-        }
+        },
+        page() { return ''; },
+        post() { return ''; }
     };
 
     t.plan(2);
