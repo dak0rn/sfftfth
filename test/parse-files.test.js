@@ -261,3 +261,44 @@ test('parse-files; failes if pygmentize fails', t => {
 
     teardown();
 });
+
+test('parse-files; continues of pygmentize succeeds and passes texts correctly', t => {
+    const fsMock = {
+        readFile() {
+            return Promise.resolve('file contents');
+        }
+    };
+    const files = Immutable.fromJS([
+        { absolutePath: 'filepath' },
+    ]);
+
+    const text = 'abc';
+
+    // Marked configuration
+    const conf = {};
+
+    const markedMock = (content, cb) => {
+
+        conf.hl('', '', (a, value) => {
+            t.equals(value, text);
+            cb(null, value);
+        });
+    };
+    markedMock.setOptions = obj => {
+        conf.hl = obj.highlight;
+    };
+
+    const pygMock = (config, code, cb) => cb(null, text);
+    const frontMatterMock = () => ({});
+
+    t.plan(2);
+
+    const parseFiles = setup(fsMock, markedMock, pygMock, frontMatterMock);
+
+    parseFiles(files)
+        .then( () => t.pass() )
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
