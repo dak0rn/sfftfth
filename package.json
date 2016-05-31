@@ -4,7 +4,8 @@
   "description": "A very simple static site generator",
   "main": "index.js",
   "scripts": {
-    "test": "eslint lib/**/*.js test/**/*.js && nyc tape test/*.test.js"
+    "test": "eslint lib/**/*.js test/**/*.js && nyc tape test/*.test.js",
+    "coverage": "nyc report --reporter=text-lcov tape/*.test.js | coveralls"
   },
   "repository": {
     "type": "git",
