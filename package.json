@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "test": "eslint lib/**/*.js test/**/*.js && nyc tape test/*.test.js",
-    "coverage": "nyc report --reporter=text-lcov tape/*.test.js | coveralls"
+    "coverage": "nyc report --reporter=text-lcov tape/*.test.js | coveralls",
+    "coverage-report": "nyc report --reporter=lcov tape/*.test.js"
   },
   "repository": {
     "type": "git",
