@@ -112,7 +112,38 @@ test('parse-config; Returns a rejected promise if the config does not contain ma
     return configs.map( config => () => {
         const mock = {
             readFile() {
-                return Promise.resolve(config);
+                return Promise.resolve(JSON.stringify(config));
+            }
+        };
+        const confStr = JSON.stringify( config );
+        const parseConfig = setup(mock);
+
+        return parseConfig(config)
+                .then( () => t.fail('Failed ' + confStr) )
+                .catch( () => t.pass('passed ' + confStr ) )
+                .then( () => teardown() );
+    })
+    // Build Promise chain
+    .reduce( (acc, cur) => acc.then( cur ), Promise.resolve() )
+    .then( () => t.end() );
+
+});
+
+test('parse-config; Returns a rejected promise if mandatory keys are null', t => {
+    // Build a list of configuration objects
+    const keys = Object.keys(validConfig);
+    const configs = keys.reduce( (acc, cur) => {
+        const prev = acc[ acc.length - 1];
+        return acc.concat([ Object.assign({}, prev, { [cur]: null }) ]);
+    }, [ {} ]);
+
+    t.plan( configs.length );
+
+    // Create handler functions
+    return configs.map( config => () => {
+        const mock = {
+            readFile() {
+                return Promise.resolve(JSON.stringify(config));
             }
         };
         const confStr = JSON.stringify( config );
