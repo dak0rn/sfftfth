@@ -33,7 +33,7 @@ test('parse-files; exports a function', t => {
     markedMock.setOptions = () => {};
 
     const pygMock = (conf, code, cb) => cb(null, 'happy code');
-    const frontMatterMock = () => {};
+    const frontMatterMock = () => ({});
 
     const parseFile = setup(fsMock, markedMock, pygMock, frontMatterMock);
 
@@ -61,7 +61,7 @@ test('parse-files; sets pygmentize as highlighter for marked when required', t =
     };
 
     const pygMock = () => t.pass();
-    const frontMatterMock = () => {};
+    const frontMatterMock = () => ({});
 
     t.plan(2);
 
@@ -177,6 +177,86 @@ test('parse-files; Updates every file record with contents and metadata', t => {
             });
         })
         .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
+
+test('parse-files; failes if markdown fails', t => {
+    const fsMock = {
+        readFile() {
+            return Promise.resolve('file contents');
+        }
+    };
+    const files = Immutable.fromJS([
+        { absolutePath: 'filepath' },
+    ]);
+
+    const markedMock = (content, cb) => {
+        cb(new Error(), content);
+    };
+    markedMock.setOptions = () => {};
+
+    const pygMock = () => {};
+    const frontMatterMock = () => ({});
+
+    t.plan(1);
+
+    const parseFiles = setup(fsMock, markedMock, pygMock, frontMatterMock);
+
+    parseFiles(files)
+        .then( () => t.fail() )
+        .catch( e => t.pass(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
+
+test('parse-files; failes if pygmentize fails', t => {
+    const fsMock = {
+        readFile() {
+            return Promise.resolve('file contents');
+        }
+    };
+    const files = Immutable.fromJS([
+        { absolutePath: 'filepath' },
+    ]);
+
+    // Error fixture
+    const theError = new Error();
+
+    // Marked configuration
+    const conf = {};
+
+    // The mock for marked that actually invokes
+    // the highlighter
+    const markedMock = (content, cb) => {
+
+        // (2)
+        conf.hl('', '', e => {
+        //   ^^ - Invoke the markedOptions.highlight() function with
+        //        a callback that checks the error:
+            t.equals(e, theError);
+
+            // Pass forward
+            cb(e); // (4)
+        });
+    };
+    markedMock.setOptions = obj => {
+        conf.hl = obj.highlight;
+    };
+
+    const pygMock = (config, code, cb) => cb(theError); // (3)
+    //                                       ^^^^^^^^ - Pass the error here back up
+    const frontMatterMock = () => ({});
+
+    t.plan(2);
+
+    const parseFiles = setup(fsMock, markedMock, pygMock, frontMatterMock);
+
+    parseFiles(files) // (1)
+        .then( () => t.fail() )
+        .catch( e => t.pass(e) ) // (5)
         .then( () => t.end() );
 
     teardown();
