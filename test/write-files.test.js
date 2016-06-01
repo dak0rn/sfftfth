@@ -46,7 +46,7 @@ test('write-files; creates the output directories of files', t => {
     const dirs = files.map( f => f.get('outputDirectory') );
 
     const mock = (name, cb) => {
-        t.true( dirs.contains(name) );
+        t.true( dirs.contains(name), name );
         cb(null);
     };
 
@@ -56,7 +56,9 @@ test('write-files; creates the output directories of files', t => {
 
     writeFiles(defConfig, files)
         .then( () => t.end() )
-        .catch( () => t.fail() );
+        .catch( e => t.fail(e) );
+
+    teardown();
 });
 
 test('write-files; writes the files', t => {
@@ -65,21 +67,23 @@ test('write-files; writes the files', t => {
         { outputPath: 'b', contents: 'b' },
         { outputPath: 'c', contents: 'c' }
     ]);
-    const paths = files.map( f => f.get('outputDirectory') );
+    const paths = files.map( f => f.get('outputPath') );
 
     const mock = {
         writeFile(file, contents) {
-            t.equal(file, contents);
+            t.equal(file, contents, file);
             t.true( paths.contains(file) );
-            return Promise.resovlve();
+            return Promise.resolve();
         }
     };
 
-    t.plan( files.count() );
+    t.plan( files.count() * 2 );
 
     const writeFiles = setup(defMkdir, mock);
 
     writeFiles(defConfig, files)
         .then( () => t.end() )
-        .catch( () => t.fail() );
+        .catch( e => t.fail(e) );
+
+    teardown();
 });
