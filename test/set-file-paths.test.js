@@ -70,3 +70,41 @@ test('set-file-paths; determines paths correctly in file mode', t => {
         .then( () => t.end() );
 
 });
+
+test('set-file-paths; determines URIs correctly in directory mode', t => {
+
+    t.plan( files.count() );
+
+    setFilePaths(config.set('outputMode', 'directory'), files)
+        .then( updated => {
+
+            files.map( file => file.get('relativePath') )
+                .map( rel => rel.replace(/(.*)\.md$/, '/$1/index.html') )
+                .forEach( (rel, idx) => {
+                    t.equals( updated.getIn([idx, 'uri']), rel );
+                });
+
+        })
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+});
+
+test('set-file-paths; determines URIs correctly in file mode', t => {
+
+    t.plan( files.count() );
+
+    setFilePaths(config.set('outputMode', 'file'), files)
+        .then( updated => {
+
+            files.map( file => file.get('relativePath') )
+                .map( rel => rel.replace(/(.*)\.md$/, '/$1.html') )
+                .forEach( (rel, idx) => {
+                    t.equals( updated.getIn([idx, 'uri']), rel );
+                });
+
+        })
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+});
