@@ -62,30 +62,32 @@ test('get-files; Transforms a list of files into a list of FileRecords', t => {
 });
 
 test('get-files; correctly sets the relative path', t => {
-    const globs = ['x', 'y', 'z'];
+    // In production glob is given an absolute path and it also returns
+    // absolute paths
+    const relatives = [ 'x', 'y', 'z' ];
+    const globs = relatives.map( gl => path.resolve(__dirname, gl) );
     const mock = () => Promise.resolve(globs);
     const getFiles = setup(mock);
 
     t.plan( globs.length );
 
     getFiles(defaultConfiguration)
-        .then( list => list.forEach((file, idx) => t.equals(file.get('relativePath'), globs[idx])))
+        .then( list => list.forEach((file, idx) => t.equals(file.get('relativePath'), relatives[idx])))
         .then( () => t.end() );
 
     teardown();
 });
 
 test('get-files; correctly determines paths', t => {
-    const globs = ['file', '__', '2'];
+    const globs = ['file', '__', '2'].map( p => path.resolve(__dirname, p) );
     const mock = () => Promise.resolve(globs);
-    const paths = globs.map( p => path.resolve(__dirname, p) );
     const getFiles = setup(mock);
 
     t.plan(3);
 
     getFiles(defaultConfiguration)
         .then( list => {
-            list.forEach( (file, idx) => t.equals(file.get('absolutePath'), paths[idx]));
+            list.forEach( (file, idx) => t.equals(file.get('absolutePath'), globs[idx]));
         })
         .catch( () => t.fail('rejected') )
         .then( () => t.end() );
