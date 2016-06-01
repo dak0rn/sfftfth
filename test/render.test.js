@@ -42,8 +42,8 @@ test('render; Exports a function', t => {
 test('render; invokes theme.index with all files and the config', t => {
     const theme = {
         index(list, config) {
-            t.equal(list, files);
-            t.equal(config, defaultConfiguration);
+            t.equals(JSON.stringify(list), JSON.stringify(files.toJS()));
+            t.equals(JSON.stringify(config), JSON.stringify(defaultConfiguration.toJS()));
         },
         post() { return ''; },
         page() { return ''; }
@@ -62,10 +62,10 @@ test('render; correctly invokes theme.post', t => {
     const theme = {
         post(post, meta, config, file, all) {
             t.equals(post, target.get('contents'));
-            t.equals(meta, target.get('meta'));
-            t.equals(config, defaultConfiguration);
-            t.equals(all, files);
-            t.equals(file, target);
+            t.equals(JSON.stringify(meta), JSON.stringify(target.get('meta').toJS()) );
+            t.equals(JSON.stringify(config), JSON.stringify(defaultConfiguration.toJS()));
+            t.equals(JSON.stringify(all), JSON.stringify(files.toJS()));
+            t.equals(JSON.stringify(file), JSON.stringify(target.toJS()));
         },
         index() { return ''; },
         page() { return ''; }
@@ -85,10 +85,10 @@ test('render; correctly invokes theme.page', t => {
     const theme = {
         page(page, meta, config, file, all) {
             t.equals(page, target.get('contents'));
-            t.equals(meta, target.get('meta'));
-            t.equals(config, defaultConfiguration);
-            t.equals(all, files);
-            t.equals(file, target);
+            t.equals(JSON.stringify(meta), JSON.stringify(target.get('meta').toJS()) );
+            t.equals(JSON.stringify(config), JSON.stringify(defaultConfiguration.toJS()));
+            t.equals(JSON.stringify(all), JSON.stringify(files.toJS()));
+            t.equals(JSON.stringify(file), JSON.stringify(target.toJS()));
         },
         index() { return ''; },
         post() { return ''; }
