@@ -87,3 +87,49 @@ test('write-files; writes the files', t => {
 
     teardown();
 });
+
+test('write-files; fails if at least one directory cannot be created', t => {
+    const files = Immutable.fromJS([
+        { outputDirectory: '' },
+        { outputDirectory: 'target' },
+        { outputDirectory: '' }
+    ]);
+
+    const mock = (name, cb) => {
+        cb( 'target' === name ? new Error() : null);
+    };
+
+    t.plan( 1 );
+
+    const writeFiles = setup(mock, defFs);
+
+    writeFiles(defConfig, files)
+        .then( () => t.fail() )
+        .catch( () => t.pass() );
+
+    teardown();
+});
+
+test('write-files; fails if at least one file cannot be written', t => {
+    const files = Immutable.fromJS([
+        { outputPath: '', contents: '' },
+        { outputPath: 'target', contents: 'target' },
+        { outputPath: '', contents: '' }
+    ]);
+
+    const mock = {
+        writeFile(file) {
+            return 'target' === file ? Promise.reject() : Promise.resolve();
+        }
+    };
+
+    t.plan( 1 );
+
+    const writeFiles = setup(defMkdir, mock);
+
+    writeFiles(defConfig, files)
+        .then( () => t.fail() )
+        .catch( () => t.pass() );
+
+    teardown();
+});
