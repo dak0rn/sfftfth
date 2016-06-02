@@ -225,3 +225,24 @@ test('parse-config; Correctly resolves files', t => {
 
     teardown();
 });
+
+test('parse-config; ensures no trailing slash', t => {
+    t.plan( 1 );
+
+    const mock = {
+        readFile() {
+            return Promise.resolve(JSON.stringify(Object.assign({ baseUrl: '/a/b/c/' }, validConfig)));
+        }
+    };
+
+    const parseConfig = setup(mock);
+
+    parseConfig('')
+        .then( config => {
+            t.equals( config.get('baseUrl'), '/a/b/c' );
+        })
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
