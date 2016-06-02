@@ -8,7 +8,8 @@ const setFilePaths = require('../lib/set-file-paths');
 
 const config = Immutable.Map({
     output: path.resolve(__dirname, 'output'),
-    contents: path.resolve(__dirname, 'contents')
+    contents: path.resolve(__dirname, 'contents'),
+    baseUrl: '/blog'
 });
 
 const files = Immutable.fromJS([
@@ -81,7 +82,7 @@ test('set-file-paths; determines URIs correctly in directory mode', t => {
             files.map( file => file.get('relativePath') )
                 .map( rel => rel.replace(/(.*)\.md$/, '/$1/index.html') )
                 .forEach( (rel, idx) => {
-                    t.equals( updated.getIn([idx, 'uri']), rel );
+                    t.equals( updated.getIn([idx, 'uri']), `${config.get('baseUrl')}${rel}` );
                 });
 
         })
@@ -100,7 +101,7 @@ test('set-file-paths; determines URIs correctly in file mode', t => {
             files.map( file => file.get('relativePath') )
                 .map( rel => rel.replace(/(.*)\.md$/, '/$1.html') )
                 .forEach( (rel, idx) => {
-                    t.equals( updated.getIn([idx, 'uri']), rel );
+                    t.equals( updated.getIn([idx, 'uri']), `${config.get('baseUrl')}${rel}` );
                 });
 
         })
