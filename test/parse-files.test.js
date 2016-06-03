@@ -6,6 +6,7 @@ const test = require('tape');
 const utils = require('./fixture');
 const prunk = require('prunk');
 const Immutable = require('immutable');
+const moment = require('moment');
 
 // Setup utility
 const setup = (fsMock, markedMock, pygMock, frontMatterMock) => {
@@ -165,7 +166,8 @@ test('parse-files; Updates every file record with contents and metadata', t => {
         };
     };
 
-    t.plan(files.count() * 2);
+    t.plan(files.count() * 3);
+    const today = moment().format('YYYY-MM-DD');
 
     const parseFiles = setup(fsMock, markedMock, pygMock, frontMatterMock);
 
@@ -174,6 +176,7 @@ test('parse-files; Updates every file record with contents and metadata', t => {
             updated.forEach( uf => {
                 t.true( names.some( name => name === uf.get('contents') ) );
                 t.true( names.some( name => name === uf.getIn(['meta', 'name'])) );
+                t.true( names.some( () => today === uf.getIn(['meta', 'date'])) );
             });
         })
         .catch( e => t.fail(e) )
@@ -181,6 +184,52 @@ test('parse-files; Updates every file record with contents and metadata', t => {
 
     teardown();
 });
+
+test('parse-files; does not add a date metadata if given manually', t => {
+    const files = Immutable.fromJS([
+        { absolutePath: '/b/c/d.md' },
+        { absolutePath: '/x/z.md' },
+        { absolutePath: './file.md' }
+    ]);
+    const names = files.map( file => file.get('absolutePath') );
+
+    const fsMock = {
+        readFile(name) {
+            return Promise.resolve(name);
+        }
+    };
+
+    const markedMock = (content, cb) => cb(null, content);
+    markedMock.setOptions = () => {};
+    const pygMock = () => {};
+    const frontMatterMock = name => {
+        return {
+            body: name,
+            attributes: {
+                name,
+                date: name
+            }
+        };
+    };
+
+    t.plan(files.count() * 3);
+
+    const parseFiles = setup(fsMock, markedMock, pygMock, frontMatterMock);
+
+    parseFiles(files)
+        .then( updated => {
+            updated.forEach( uf => {
+                t.true( names.some( name => name === uf.get('contents') ) );
+                t.true( names.some( name => name === uf.getIn(['meta', 'name'])) );
+                t.true( names.some( name => name === uf.getIn(['meta', 'date'])) );
+            });
+        })
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
+
 
 test('parse-files; failes if markdown fails', t => {
     const fsMock = {
