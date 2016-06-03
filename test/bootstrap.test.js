@@ -9,7 +9,7 @@ const path = require('path');
 
 // Setup utility
 const setup = (copyMock) => {
-    prunk.mock('copy-dir', copyMock);
+    prunk.mock('recursive-copy', copyMock);
 
     return require('../lib/bootstrap');
 };
@@ -28,10 +28,10 @@ test('bootstrap; copies correctly', t => {
     t.plan(2);
 
     const toPath = '$$toPath$$';
-    const mock = (from, to, cb) => {
+    const mock = (from, to) => {
         t.equals(to, toPath);
         t.equals(from, path.resolve(__dirname, '..', '_tpl'));
-        cb(null);
+        return Promise.resolve();
     };
     const bootstrap = setup(mock);
 
@@ -45,8 +45,8 @@ test('bootstrap; copies correctly', t => {
 test('bootstrap; fails if the library fails', t => {
     t.plan(1);
 
-    const mock = (x, y, cb) => {
-        cb( new Error() );
+    const mock = () => {
+        return Promise.reject();
     };
     const bootstrap = setup(mock);
 
