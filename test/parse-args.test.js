@@ -42,8 +42,19 @@ test('parse-args; creates a new command line argument parser w/ args', t => {
     teardown();
 });
 
-test('parse-args; adds a configuration flag', t => {
-    t.plan(2);
+test('parse-args; adds configuration flags', t => {
+    t.plan(3);
+
+    const flags = {
+        '-c'(opts) {
+            t.equals(opts.defaultValue, 'config.json');
+            t.equals(opts.metavar, 'config file');
+        },
+
+        '-b'(opts) {
+            t.equals(opts.metavar, 'directory name');
+        }
+    };
 
     const package = {};
     const parser = {
@@ -51,8 +62,12 @@ test('parse-args; adds a configuration flag', t => {
 
             return {
                 addArgument(name, opts) {
-                    t.equals(name, 'config');
-                    t.equals(opts.defaultValue, 'config.json');
+                    const validator = flags[name];
+
+                    if( ! validator )
+                        t.fail(`Unknown: ${name}`);
+                    else
+                        validator(opts);
                 }
             };
         }
