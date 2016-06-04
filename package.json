@@ -1,13 +1,13 @@
 {
   "name": "sfftfth",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A simple static site generator",
   "main": "index.js",
   "scripts": {
     "test": "eslint lib/**/*.js test/**/*.js && nyc tape test/*.test.js",
     "travis-coverage": "nyc report --reporter=text-lcov tape/*.test.js | coveralls",
     "coverage": "nyc report --reporter=lcov tape/*.test.js",
-    "prepublish": "babel -d build lib/*.js index.js && cp package.json build"
+    "prepublish": "babel -d build lib/*.js index.js && cp package.json build && cp -R _tpl  build/_tpl"
   },
   "repository": {
     "type": "git",
