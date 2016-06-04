@@ -7,7 +7,7 @@
     "test": "eslint lib/**/*.js test/**/*.js && nyc tape test/*.test.js",
     "travis-coverage": "nyc report --reporter=text-lcov tape/*.test.js | coveralls",
     "coverage": "nyc report --reporter=lcov tape/*.test.js",
-    "prepublish": "babel -d build lib/*.js index.js"
+    "prepublish": "babel -d build lib/*.js index.js && cp package.json build"
   },
   "repository": {
     "type": "git",
