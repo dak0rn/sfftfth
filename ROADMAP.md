@@ -6,3 +6,4 @@
 - `server` A builtin web server
     - `watch` Watch for changes and rerender
 - `index.html`  Make sure that `index.md` is not overwritten by the `index.html` file
+- Programmatic API
