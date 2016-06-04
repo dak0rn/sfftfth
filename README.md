@@ -172,3 +172,9 @@ sfftfth -b example-directory
       -v, --version      Show program's version number and exit.
       -c config file     Path to the sfftfth config file, default: config.json
       -b directory name  Bootstrap a new setup in the given existing directory
+
+## Errata
+
+Found a bug or missing a feature?<br />
+Feel free to [open an issue](https://github.com/dak0rn/sfftfth/issues) or
+[create a pull request](https://github.com/dak0rn/sfftfth/pulls).
