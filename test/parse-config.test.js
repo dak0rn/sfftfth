@@ -25,7 +25,8 @@ const validConfig = {
 // Optional keys added if not present
 const optionalKeys = [
     'baseUrl',
-    'outputMode'
+    'outputMode',
+    'renderDrafts'
 ];
 
 /* Tests */
