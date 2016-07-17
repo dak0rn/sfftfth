@@ -57,6 +57,44 @@ test('bootstrap; copies correctly', t => {
     teardown();
 });
 
+test('bootstrap; invokes the copy function with a config object', t => {
+    t.plan(2);
+
+    const mock = (from, to, obj) => {
+        t.equals(typeof obj, 'object');
+        t.equals(typeof obj.filter, 'function');
+        return Promise.resolve();
+    };
+    const bootstrap = setup(mock);
+
+    bootstrap('')
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
+
+test('bootstrap; filters for _tpl', t => {
+    t.plan(4);
+
+    const mock = (from, to, obj) => {
+
+        t.equals(obj.filter('_tpl'), false);
+        t.equals(obj.filter('_tpl/a/b/c'), false);
+        t.equals(obj.filter('a/_tpl/b'), true);
+        t.equals(obj.filter('filename'), true );
+
+        return Promise.resolve();
+    };
+    const bootstrap = setup(mock);
+
+    bootstrap('')
+        .catch( e => t.fail(e) )
+        .then( () => t.end() );
+
+    teardown();
+});
+
 test('bootstrap; fails if the library fails', t => {
     t.plan(1);
 
